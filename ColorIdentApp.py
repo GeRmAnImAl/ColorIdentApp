@@ -1,0 +1,187 @@
+import tkinter as tk
+from tkinter import *
+from tkinter import ttk
+from tkinter import messagebox
+import sqlite3
+from PIL import ImageTk, Image
+
+root = tk.Tk()
+root.title("Color Identification Assessment")
+root.eval("tk::PlaceWindow . center")
+
+#Set application default theme
+style = ttk.Style()
+style.configure('TFrame', background = '#e1d8b9')
+style.configure('TLabel', background = '#e1d8b9', font = ('Arial', 11))
+style.configure('TButton', background = '#e1d8b9')
+style.configure('Header.TLabel', font = ('Arial', 18, 'bold'))
+style.configure('Header2.TLabel', font = ('Arial', 14, 'bold'))
+
+#User class to store data to before updating DB
+class User:
+     def __init__(self, userID, highestLevel, totalCorrect, totalIncorrect, staff):
+          self.userID = userID
+          self.highestLevel = highestLevel
+          self.totalCorrect = totalCorrect
+          self. totalIncorrect = totalIncorrect
+          self.staff = staff
+
+#Global variable for usage throughout the application
+userOBJ = ''
+
+#Creates a User object to be used throughout the application
+def createUserOBJ(data):
+    global userOBJ
+    userOBJ = User(data[0][0], data[0][1], data[0][2], data[0][3], data[0][4])
+
+#Creates the local database and users table if they do not already exist.
+def createDB():
+        db = sqlite3.connect('ColorIdentUsers.db')
+        db.row_factory = sqlite3.Row
+        cur = db.cursor()
+        res = cur.execute('SELECT name FROM sqlite_master WHERE name = "users"')
+
+        if res.fetchone() is None:
+            cur.execute('CREATE TABLE users (id, highest_level, total_correct, total_incorrect, staff)')
+
+#Checks if the user ID exists in the database, if it does the instructions screen, or teacher UI loads, otherwise throws an error.
+def login(entry):
+        user = entry.get()
+        if user:
+            db = sqlite3.connect('ColorIdentUsers.db')
+            db.row_factory = sqlite3.Row
+            cur = db.cursor()
+            res = cur.execute('SELECT id FROM users WHERE id = ?', (user,))
+
+            if res.fetchone() is None:
+                messagebox.showerror(title = 'User Not Found', message = 'That user does not exist.')
+            else:
+                result = cur.execute('SELECT * FROM users where id = ?', (user,))
+                createUserOBJ(result.fetchall())
+                db.close()
+                if userOBJ.staff == "True":
+                    loadTeacherUI()
+                else:
+                    loadInstructionsUI()
+        else:
+            messagebox.showerror(title = 'Blank User ID', message = 'You must enter a user ID to login.')
+
+#Creates a new user, checks if the chosen ID already exists and throws an error if true. Proceeds to load instructions screen or teacher UI.
+def createUser(entry, flag):
+    user = entry.get()
+    staff = False
+    if flag.get() is True:
+        staff = True
+
+    if user:
+        db = sqlite3.connect('ColorIdentUsers.db')
+        db.row_factory = sqlite3.Row
+        cur = db.cursor()
+        res = cur.execute('SELECT id FROM users WHERE id = ?', (user,))
+
+        if res.fetchone() is not None:
+            messagebox.showerror(title = 'Can Not Create User', message = 'A user with that ID already exists!')
+        else:
+            cur.execute('INSERT INTO users VALUES (?, ?, ?, ?, ?)', (user, 0, 0, 0, str(staff)))
+            db.commit()
+            messagebox.showinfo(title = 'Success!', message = 'User created successfully!')
+            result = cur.execute('SELECT * FROM users where id = ?', (user,))
+            createUserOBJ(result.fetchall())
+            db.close()
+            if userOBJ.staff == "True":
+                loadTeacherUI()
+            else:
+                loadInstructionsUI()
+    else:
+        messagebox.showerror(title = 'Blank User ID', message = 'You must enter a User ID for the new User.')
+
+def start():
+    print(str(userOBJ.userID) + '\n' + str(userOBJ.highestLevel) + '\n' + str(userOBJ.totalCorrect) + '\n' + str(userOBJ.totalIncorrect))
+
+def quit():
+    root.destroy()
+
+def clearWidgets(frame):
+    for widget in frame.winfo_children():
+        widget.destroy()
+
+def loadLoginUI():
+    clearWidgets(teacherUIFrame)
+    loginFrame.tkraise()
+    loginFrame.pack_propagate(False)
+    ttk.Label(loginFrame, text= "Welcome to Color Picker!", style = 'Header.TLabel').grid(row=0, column=0, columnspan = 3)
+    ttk.Label(loginFrame, text = 'User Name:').grid(row= 1, column= 0, padx = 5, pady= 5, sticky = 'e')
+    entry_userID = ttk.Entry(loginFrame, width = 12, font = ('Arial', 10))
+    entry_userID.grid(row = 1, column=1, padx = 5, sticky = 'w', columnspan= 2)
+    ttk.Button(loginFrame, text = 'Login', command = lambda: login(entry_userID)).grid(row = 2, column = 0, padx=5, pady= 5, columnspan = 2)
+    ttk.Button(loginFrame, text = 'Create User', command = lambda: createUser(entry_userID, staffFlag)).grid(row = 3, column = 0, padx= 5, pady= 5, columnspan = 2)
+    staffFlag = tk.BooleanVar()
+    staff = ttk.Checkbutton(loginFrame, text = "Staff", variable = staffFlag, onvalue=True, offvalue= False).grid(row = 3, column = 2, sticky = 'w')
+
+def loadInstructionsUI():
+    clearWidgets(loginFrame)
+    instructionsFrame.tkraise()
+    instructionsFrame.pack_propagate(False)
+    ttk.Label(instructionsFrame, text = "Game Instructions", style = 'Header.TLabel').grid(row = 0, column = 0, columnspan = 2, padx=5, pady=5)
+    
+    pic = Image.open('Assets\Look.png')
+    resizePic = pic.resize((100, 100), Image.LANCZOS)
+    eyes = ImageTk.PhotoImage(resizePic)
+    eyes_label = ttk.Label(instructionsFrame, image = eyes, anchor='center')
+    eyes_label.image = eyes
+    eyes_label.grid(row = 1, column = 0, padx=5, pady=5)
+    ttk.Label(instructionsFrame, text = 'Look!', style = 'TLabel').grid(row = 1, column=1, padx=5, pady=5)
+
+    pic = Image.open('Assets\Listen.png')
+    resizePic = pic.resize((100, 100), Image.LANCZOS)
+    ear = ImageTk.PhotoImage(resizePic)
+    ear_label = ttk.Label(instructionsFrame, image = ear, anchor='center')
+    ear_label.image = ear
+    ear_label.grid(row = 2, column = 1, padx=5, pady=5)
+    ttk.Label(instructionsFrame, text = 'Listen!', style = 'TLabel').grid(row = 2, column=0, padx=5, pady=5)
+
+    pic = Image.open('Assets\Press.png')
+    resizePic = pic.resize((100, 100), Image.LANCZOS)
+    press = ImageTk.PhotoImage(resizePic)
+    press_label = ttk.Label(instructionsFrame, image = press, anchor='center')
+    press_label.image = press
+    press_label.grid(row = 3, column = 0, padx=5, pady=5)
+    ttk.Label(instructionsFrame, text = 'Choose!', style = 'TLabel').grid(row = 3, column=1, padx=5, pady=5)
+
+    ttk.Button(instructionsFrame, text = "Start", command = lambda: start()).grid(row = 4, column = 0, padx= 5, pady= 5)
+    ttk.Button(instructionsFrame, text = 'Quit', command = lambda: quit()).grid(row = 4, column = 1, padx= 5, pady= 5)
+
+def loadTeacherUI():
+    clearWidgets(loginFrame)
+    teacherUIFrame.tkraise()
+    teacherUIFrame.pack_propagate(False)
+    ttk.Label(teacherUIFrame, text = 'User Data', style = 'Header.TLabel').grid(row = 0, column = 0, columnspan = 5)
+    ttk.Label(teacherUIFrame, text = 'ID', style = 'Header2.TLabel').grid(row = 1, column = 0, padx = 5)
+    ttk.Label(teacherUIFrame, text = 'Highest Level', style = 'Header2.TLabel').grid(row = 1, column = 1, padx = 5)
+    ttk.Label(teacherUIFrame, text = 'Total Correct', style = 'Header2.TLabel').grid(row = 1, column = 2, padx = 5)
+    ttk.Label(teacherUIFrame, text = 'Total Incorrect', style = 'Header2.TLabel').grid(row = 1, column = 3, padx = 5)
+    ttk.Label(teacherUIFrame, text = 'Staff', style = 'Header2.TLabel').grid(row = 1, column = 4, padx = 5)
+    db = sqlite3.connect('ColorIdentUsers.db')
+    db.row_factory = sqlite3.Row
+    cur = db.cursor()
+    res = cur.execute('SELECT * FROM users WHERE staff = "False"')
+    i = 2
+    for user in res:
+        for j in range(len(user)):
+            ttk.Label(teacherUIFrame, width = 10, anchor = 'center', text = user[j]).grid(row = i, column = j, padx = 5)
+        i += 1
+
+    ttk.Button(teacherUIFrame, text = 'Back', command = lambda: loadLoginUI()).grid(row = i, column = 0, columnspan= 5, padx= 5, pady= 5)
+
+
+loginFrame = ttk.Frame(root)
+instructionsFrame = ttk.Frame(root)
+teacherUIFrame = ttk.Frame(root)
+
+for frame in (loginFrame, instructionsFrame, teacherUIFrame):
+    frame.grid(row = 0, column = 0)
+
+createDB()
+loadLoginUI()
+
+root.mainloop()
