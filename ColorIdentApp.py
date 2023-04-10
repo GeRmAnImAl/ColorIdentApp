@@ -13,7 +13,7 @@ root.eval("tk::PlaceWindow . center")
 style = ttk.Style()
 style.configure('TFrame', background = '#e1d8b9')
 style.configure('TLabel', background = '#e1d8b9', font = ('Arial', 11))
-style.configure('TButton', background = '#e1d8b9')
+style.configure('TButton', background = '#28393a')
 style.configure('Header.TLabel', font = ('Arial', 18, 'bold'))
 style.configure('Header2.TLabel', font = ('Arial', 14, 'bold'))
 
@@ -95,8 +95,37 @@ def createUser(entry, flag):
     else:
         messagebox.showerror(title = 'Blank User ID', message = 'You must enter a User ID for the new User.')
 
-def start():
-    print(str(userOBJ.userID) + '\n' + str(userOBJ.highestLevel) + '\n' + str(userOBJ.totalCorrect) + '\n' + str(userOBJ.totalIncorrect))
+def loadGamePlayUI():
+    clearWidgets(instructionsFrame)
+    gamePlayFrame.tkraise()
+    gamePlayFrame.pack_propagate(False)
+    ttk.Label(gamePlayFrame, text = 'Lets Play!', style = 'Header.TLabel').grid(row = 0, column = 1, columnspan= 2)
+
+    #pic = Image.open('Assets\Press.png')
+    #resizePic = pic.resize((100, 100), Image.LANCZOS)
+    #press = ImageTk.PhotoImage(resizePic)
+    #press_label = ttk.Label(gamePlayFrame, image = press, anchor='center')
+    #press_label.image = press
+    #press_label.grid(row = 1, column = 1, columnspan = 2, padx=5, pady=5)
+    color_image = tk.Label(gamePlayFrame, width= 10, height=5)
+    color_image.grid(row=2, column =1, columnspan=2)
+    color_image.config(background='dark red')
+
+    color_label = ttk.Label(gamePlayFrame, text = "Color", style = "Header2.TLabel")
+    color_label.grid(row = 3, column = 1, columnspan= 2, padx= 5, pady= 5)
+
+    red_button = tk.Button(gamePlayFrame, text = 'RED', background='dark red', foreground='pink', width= 10)
+    red_button.grid(row = 4, column = 0, padx=5, pady=5)
+    yellow_button = tk.Button(gamePlayFrame, text = 'Yellow', background='#CDCD33', foreground='#FFFF14', width= 10)
+    yellow_button.grid(row = 4, column = 1, padx=5, pady=5)
+    green_button = tk.Button(gamePlayFrame, text = 'Green', background= 'green', foreground='lime green', width= 10)
+    green_button.grid(row = 4, column = 2, padx=5, pady=5)
+    blue_button = tk.Button(gamePlayFrame, text = 'Blue', background='blue', foreground='cyan', width= 10)
+    blue_button.grid(row = 4, column = 3, padx=5, pady=5)
+
+    ttk.Button(gamePlayFrame, text = 'Quit', command= lambda:quit()).grid(row = 0, column = 3, padx=5, pady=5)
+
+    
 
 def quit():
     root.destroy()
@@ -127,7 +156,7 @@ def loadInstructionsUI():
     pic = Image.open('Assets\Look.png')
     resizePic = pic.resize((100, 100), Image.LANCZOS)
     eyes = ImageTk.PhotoImage(resizePic)
-    eyes_label = ttk.Label(instructionsFrame, image = eyes, anchor='center')
+    eyes_label = ttk.Label(instructionsFrame, image = eyes)
     eyes_label.image = eyes
     eyes_label.grid(row = 1, column = 0, padx=5, pady=5)
     ttk.Label(instructionsFrame, text = 'Look!', style = 'TLabel').grid(row = 1, column=1, padx=5, pady=5)
@@ -135,7 +164,7 @@ def loadInstructionsUI():
     pic = Image.open('Assets\Listen.png')
     resizePic = pic.resize((100, 100), Image.LANCZOS)
     ear = ImageTk.PhotoImage(resizePic)
-    ear_label = ttk.Label(instructionsFrame, image = ear, anchor='center')
+    ear_label = ttk.Label(instructionsFrame, image = ear)
     ear_label.image = ear
     ear_label.grid(row = 2, column = 1, padx=5, pady=5)
     ttk.Label(instructionsFrame, text = 'Listen!', style = 'TLabel').grid(row = 2, column=0, padx=5, pady=5)
@@ -143,12 +172,12 @@ def loadInstructionsUI():
     pic = Image.open('Assets\Press.png')
     resizePic = pic.resize((100, 100), Image.LANCZOS)
     press = ImageTk.PhotoImage(resizePic)
-    press_label = ttk.Label(instructionsFrame, image = press, anchor='center')
+    press_label = ttk.Label(instructionsFrame, image = press)
     press_label.image = press
     press_label.grid(row = 3, column = 0, padx=5, pady=5)
     ttk.Label(instructionsFrame, text = 'Choose!', style = 'TLabel').grid(row = 3, column=1, padx=5, pady=5)
 
-    ttk.Button(instructionsFrame, text = "Start", command = lambda: start()).grid(row = 4, column = 0, padx= 5, pady= 5)
+    ttk.Button(instructionsFrame, text = "Start", command = lambda: loadGamePlayUI()).grid(row = 4, column = 0, padx= 5, pady= 5)
     ttk.Button(instructionsFrame, text = 'Quit', command = lambda: quit()).grid(row = 4, column = 1, padx= 5, pady= 5)
 
 def loadTeacherUI():
@@ -177,9 +206,10 @@ def loadTeacherUI():
 loginFrame = ttk.Frame(root)
 instructionsFrame = ttk.Frame(root)
 teacherUIFrame = ttk.Frame(root)
+gamePlayFrame= ttk.Frame(root)
 
-for frame in (loginFrame, instructionsFrame, teacherUIFrame):
-    frame.grid(row = 0, column = 0)
+for frame in (loginFrame, instructionsFrame, teacherUIFrame, gamePlayFrame):
+    frame.grid(row = 0, column = 0, sticky = 'nesw')
 
 createDB()
 loadLoginUI()
