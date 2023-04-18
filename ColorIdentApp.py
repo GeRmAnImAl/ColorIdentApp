@@ -4,6 +4,7 @@ from tkinter import ttk
 from tkinter import messagebox
 import sqlite3
 from PIL import ImageTk, Image
+import random
 
 root = tk.Tk()
 root.title("Color Identification Assessment")
@@ -26,8 +27,8 @@ class User:
           self. totalIncorrect = totalIncorrect
           self.staff = staff
 
-#Global variable for usage throughout the application
-userOBJ = ''
+#Global variables for usage throughout the application
+global userOBJ
 
 #Creates a User object to be used throughout the application
 def createUserOBJ(data):
@@ -95,37 +96,71 @@ def createUser(entry, flag):
     else:
         messagebox.showerror(title = 'Blank User ID', message = 'You must enter a User ID for the new User.')
 
+def updateUser(correct, incorrect):
+    userOBJ.totalCorrect += correct
+    userOBJ.totalIncorrect += incorrect
+    db = sqlite3.connect('ColorIdentUsers.db')
+    db.row_factory = sqlite3.Row
+    cur = db.cursor()
+    totalCorrect = cur.execute('SELECT total_correct FROM users WHERE id = ?', (userOBJ.userID,))
+    totalIncorrect = cur.execute('SELECT total_incorrect FROM users WHERE id = ?', (userOBJ.userID,))
+    
+    cur.execute('UPDATE users SET total_correct = ? WHERE id = ?', (userOBJ.totalCorrect, userOBJ.userID,))
+    cur.execute('UPDATE users SET total_incorrect = ? WHERE id = ?', (userOBJ.totalIncorrect, userOBJ.userID,))
+    db.commit()
+    db.close()
+    quit()
+
 def loadGamePlayUI():
     clearWidgets(instructionsFrame)
     gamePlayFrame.tkraise()
     gamePlayFrame.pack_propagate(False)
     ttk.Label(gamePlayFrame, text = 'Lets Play!', style = 'Header.TLabel').grid(row = 0, column = 1, columnspan= 2)
 
-    #pic = Image.open('Assets\Press.png')
-    #resizePic = pic.resize((100, 100), Image.LANCZOS)
-    #press = ImageTk.PhotoImage(resizePic)
-    #press_label = ttk.Label(gamePlayFrame, image = press, anchor='center')
-    #press_label.image = press
-    #press_label.grid(row = 1, column = 1, columnspan = 2, padx=5, pady=5)
     color_image = tk.Label(gamePlayFrame, width= 10, height=5)
     color_image.grid(row=2, column =1, columnspan=2)
-    color_image.config(background='dark red')
 
     color_label = ttk.Label(gamePlayFrame, text = "Color", style = "Header2.TLabel")
     color_label.grid(row = 3, column = 1, columnspan= 2, padx= 5, pady= 5)
 
-    red_button = tk.Button(gamePlayFrame, text = 'RED', background='dark red', foreground='pink', width= 10)
-    red_button.grid(row = 4, column = 0, padx=5, pady=5)
-    yellow_button = tk.Button(gamePlayFrame, text = 'Yellow', background='#CDCD33', foreground='#FFFF14', width= 10)
-    yellow_button.grid(row = 4, column = 1, padx=5, pady=5)
-    green_button = tk.Button(gamePlayFrame, text = 'Green', background= 'green', foreground='lime green', width= 10)
-    green_button.grid(row = 4, column = 2, padx=5, pady=5)
-    blue_button = tk.Button(gamePlayFrame, text = 'Blue', background='blue', foreground='cyan', width= 10)
-    blue_button.grid(row = 4, column = 3, padx=5, pady=5)
+    tk.Button(gamePlayFrame, text = 'RED', background='dark red', foreground='pink', width= 10, command= lambda: checkAnswer('Red')).grid(row = 4, column = 0, padx=5, pady=5)
+    tk.Button(gamePlayFrame, text = 'Yellow', background='#CDCD33', foreground='#FFFF14', width= 10, command= lambda: checkAnswer('Yellow')).grid(row = 4, column = 1, padx=5, pady=5)
+    tk.Button(gamePlayFrame, text = 'Green', background= 'green', foreground='lime green', width= 10, command= lambda: checkAnswer('Green')).grid(row = 4, column = 2, padx=5, pady=5)
+    tk.Button(gamePlayFrame, text = 'Blue', background='blue', foreground='cyan', width= 10, command= lambda: checkAnswer('Blue')).grid(row = 4, column = 3, padx=5, pady=5)
 
-    ttk.Button(gamePlayFrame, text = 'Quit', command= lambda:quit()).grid(row = 0, column = 3, padx=5, pady=5)
+    ttk.Button(gamePlayFrame, text = 'Quit', command= lambda:updateUser(correct, incorrect)).grid(row = 0, column = 3, padx=5, pady=5)
 
-    
+    colorList = ['Red', 'Yellow', 'Green', 'Blue']
+    randomColor = ''
+    counter = 0
+    correct = 0
+    incorrect = 0
+
+    def generateColor():
+        nonlocal randomColor
+        randomColor = random.choice(colorList)
+        color_image.config(bg= randomColor)
+        color_label.config(text = randomColor, foreground= randomColor)
+            
+
+    def checkAnswer(guess):
+        nonlocal counter
+        nonlocal correct
+        nonlocal incorrect
+        nonlocal randomColor
+        
+        if guess == randomColor:
+            correct += 1
+        else:
+            incorrect += 1
+        print('Guess: ' + guess)
+        print('RandomColor:' + randomColor)
+        print('Incorrect: ' + str(incorrect))
+        print('Correct: ' + str(correct))
+        counter += 1
+        generateColor()
+
+    generateColor()
 
 def quit():
     root.destroy()
