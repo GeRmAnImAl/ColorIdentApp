@@ -96,6 +96,7 @@ def createUser(entry, flag):
     else:
         messagebox.showerror(title = 'Blank User ID', message = 'You must enter a User ID for the new User.')
 
+#Updates user data after a user session.
 def updateUser(correct, incorrect, level):
     userOBJ.totalCorrect += correct
     userOBJ.totalIncorrect += incorrect
@@ -115,6 +116,7 @@ def updateUser(correct, incorrect, level):
     db.close()
     quit()
 
+#Loads the UI for gameplay
 def loadGamePlayUI():
     clearWidgets(instructionsFrame)
     gamePlayFrame.tkraise()
@@ -142,25 +144,28 @@ def loadGamePlayUI():
     incorrect = 0
     level = 1
 
+    #Game logic for level one
     def generateLevelOne():
         nonlocal randomColor
         randomColor = random.choice(colorList)
         color_image.config(bg= randomColor)
         color_label.config(text = randomColor, foreground= randomColor)
     
+    #Game logic for level two
     def generateLevelTwo():
         nonlocal randomColor
         randomColor = random.choice(colorList)
         color_image.config(bg= randomColor)
         color_label.config(text = randomColor, foreground= 'Black')
 
+    #Game logic for level three
     def generateLevelThree():
         nonlocal randomColor
         randomColor = random.choice(colorList)
         color_image.config(bg= '#e1d8b9')
         color_label.config(text = randomColor, foreground= randomColor)
             
-
+    #Game logic to determine correct/incorrect answer's as well as determine mastery and level advancement
     def checkAnswer(guess):
         nonlocal counter
         nonlocal correct
@@ -196,13 +201,16 @@ def loadGamePlayUI():
 
     generateLevelOne()
 
+#Exits the application
 def quit():
     root.destroy()
 
+#Clears the widgets from a frame
 def clearWidgets(frame):
     for widget in frame.winfo_children():
         widget.destroy()
 
+#Loads the UI for the user login
 def loadLoginUI():
     clearWidgets(teacherUIFrame)
     loginFrame.tkraise()
@@ -216,6 +224,7 @@ def loadLoginUI():
     staffFlag = tk.BooleanVar()
     staff = ttk.Checkbutton(loginFrame, text = "Staff", variable = staffFlag, onvalue=True, offvalue= False).grid(row = 3, column = 2, sticky = 'w')
 
+#Loads the UI for gameplay instructions
 def loadInstructionsUI():
     clearWidgets(loginFrame)
     instructionsFrame.tkraise()
@@ -249,6 +258,7 @@ def loadInstructionsUI():
     ttk.Button(instructionsFrame, text = "Start", command = lambda: loadGamePlayUI()).grid(row = 4, column = 0, padx= 5, pady= 5)
     ttk.Button(instructionsFrame, text = 'Quit', command = lambda: quit()).grid(row = 4, column = 1, padx= 5, pady= 5)
 
+#Loads the UI for staff to view user data
 def loadTeacherUI():
     clearWidgets(loginFrame)
     teacherUIFrame.tkraise()
@@ -271,7 +281,7 @@ def loadTeacherUI():
 
     ttk.Button(teacherUIFrame, text = 'Back', command = lambda: loadLoginUI()).grid(row = i, column = 0, columnspan= 5, padx= 5, pady= 5)
 
-
+#Frame assets used in the application
 loginFrame = ttk.Frame(root)
 instructionsFrame = ttk.Frame(root)
 teacherUIFrame = ttk.Frame(root)
@@ -280,7 +290,9 @@ gamePlayFrame= ttk.Frame(root)
 for frame in (loginFrame, instructionsFrame, teacherUIFrame, gamePlayFrame):
     frame.grid(row = 0, column = 0, sticky = 'nesw')
 
+#Create the database if one does not exist
 createDB()
+#Load the user login UI
 loadLoginUI()
 
 root.mainloop()
