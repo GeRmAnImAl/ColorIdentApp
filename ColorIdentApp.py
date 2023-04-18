@@ -83,7 +83,7 @@ def createUser(entry, flag):
         if res.fetchone() is not None:
             messagebox.showerror(title = 'Can Not Create User', message = 'A user with that ID already exists!')
         else:
-            cur.execute('INSERT INTO users VALUES (?, ?, ?, ?, ?)', (user, 0, 0, 0, str(staff)))
+            cur.execute('INSERT INTO users VALUES (?, ?, ?, ?, ?)', (user, 1, 0, 0, str(staff)))
             db.commit()
             messagebox.showinfo(title = 'Success!', message = 'User created successfully!')
             result = cur.execute('SELECT * FROM users where id = ?', (user,))
@@ -96,17 +96,21 @@ def createUser(entry, flag):
     else:
         messagebox.showerror(title = 'Blank User ID', message = 'You must enter a User ID for the new User.')
 
-def updateUser(correct, incorrect):
+def updateUser(correct, incorrect, level):
     userOBJ.totalCorrect += correct
     userOBJ.totalIncorrect += incorrect
     db = sqlite3.connect('ColorIdentUsers.db')
     db.row_factory = sqlite3.Row
     cur = db.cursor()
-    totalCorrect = cur.execute('SELECT total_correct FROM users WHERE id = ?', (userOBJ.userID,))
-    totalIncorrect = cur.execute('SELECT total_incorrect FROM users WHERE id = ?', (userOBJ.userID,))
+    res = cur.execute('SELECT highest_level FROM users WHERE id = ?', (userOBJ.userID,))
+    highestLevel = res.fetchone()[0]
     
     cur.execute('UPDATE users SET total_correct = ? WHERE id = ?', (userOBJ.totalCorrect, userOBJ.userID,))
     cur.execute('UPDATE users SET total_incorrect = ? WHERE id = ?', (userOBJ.totalIncorrect, userOBJ.userID,))
+    if level > int(highestLevel):
+        userOBJ.highestLevel = level
+        cur.execute('UPDATE users SET highest_level = ? WHERE id = ?', (userOBJ.highestLevel, userOBJ.userID,))
+
     db.commit()
     db.close()
     quit()
@@ -128,18 +132,32 @@ def loadGamePlayUI():
     tk.Button(gamePlayFrame, text = 'Green', background= 'green', foreground='lime green', width= 10, command= lambda: checkAnswer('Green')).grid(row = 4, column = 2, padx=5, pady=5)
     tk.Button(gamePlayFrame, text = 'Blue', background='blue', foreground='cyan', width= 10, command= lambda: checkAnswer('Blue')).grid(row = 4, column = 3, padx=5, pady=5)
 
-    ttk.Button(gamePlayFrame, text = 'Quit', command= lambda:updateUser(correct, incorrect)).grid(row = 0, column = 3, padx=5, pady=5)
+    ttk.Button(gamePlayFrame, text = 'Quit', command= lambda:updateUser(correct, incorrect, level)).grid(row = 0, column = 3, padx=5, pady=5)
 
     colorList = ['Red', 'Yellow', 'Green', 'Blue']
     randomColor = ''
-    counter = 0
+    counter = 1
+    masteryCount = 0
     correct = 0
     incorrect = 0
+    level = 1
 
-    def generateColor():
+    def generateLevelOne():
         nonlocal randomColor
         randomColor = random.choice(colorList)
         color_image.config(bg= randomColor)
+        color_label.config(text = randomColor, foreground= randomColor)
+    
+    def generateLevelTwo():
+        nonlocal randomColor
+        randomColor = random.choice(colorList)
+        color_image.config(bg= randomColor)
+        color_label.config(text = randomColor, foreground= 'Black')
+
+    def generateLevelThree():
+        nonlocal randomColor
+        randomColor = random.choice(colorList)
+        color_image.config(bg= '#e1d8b9')
         color_label.config(text = randomColor, foreground= randomColor)
             
 
@@ -148,19 +166,35 @@ def loadGamePlayUI():
         nonlocal correct
         nonlocal incorrect
         nonlocal randomColor
+        nonlocal masteryCount
+        nonlocal level
         
         if guess == randomColor:
             correct += 1
+            masteryCount += 1
         else:
             incorrect += 1
-        print('Guess: ' + guess)
-        print('RandomColor:' + randomColor)
-        print('Incorrect: ' + str(incorrect))
-        print('Correct: ' + str(correct))
-        counter += 1
-        generateColor()
 
-    generateColor()
+        if counter == 5:
+            if masteryCount >= 4:
+                level += 1
+            masteryCount = 0
+            counter = 1
+        else:
+            counter += 1
+
+
+        match level:
+            case 1:
+                generateLevelOne()
+            case 2:
+                generateLevelTwo()
+            case 3:
+                generateLevelThree()
+            case 4:
+                messagebox.showinfo(title = 'CONGRATULATIONS!', message= 'You have reached the max level of this game!')
+
+    generateLevelOne()
 
 def quit():
     root.destroy()
