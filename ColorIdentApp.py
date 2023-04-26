@@ -6,6 +6,8 @@ import sqlite3
 from PIL import ImageTk, Image
 import random
 from playsound import *
+from gpiozero import LED
+from time import sleep
 
 
 root = tk.Tk()
@@ -152,6 +154,7 @@ def loadGamePlayUI():
         randomColor = random.choice(colorList)
         color_image.config(bg= randomColor)
         color_label.config(text = randomColor, foreground= randomColor)
+        lightLED(randomColor)
     
     #Game logic for level two
     def generateLevelTwo():
@@ -159,6 +162,7 @@ def loadGamePlayUI():
         randomColor = random.choice(colorList)
         color_image.config(bg= randomColor)
         color_label.config(text = randomColor, foreground= 'Black')
+        lightLED(randomColor)
 
     #Game logic for level three
     def generateLevelThree():
@@ -166,6 +170,32 @@ def loadGamePlayUI():
         randomColor = random.choice(colorList)
         color_image.config(bg= '#e1d8b9')
         color_label.config(text = randomColor, foreground= randomColor)
+        lightLED(randomColor)
+
+    #Game logic for level four
+    def generateLevelFour():
+        nonlocal randomColor
+        randomColor = random.choice(colorList)
+        color_image.config(bg= '#e1d8b9')
+        color_label.config(text = randomColor, foreground= 'Black')
+    
+    #Game logic for level five
+    def generateLevelFive():
+        nonlocal randomColor
+        randomColor = random.choice(colorList)
+        color_image.config(bg= '#e1d8b9')
+        color_label.config(text = randomColor, foreground= 'Black')
+
+    #Logic to determine which LED to turn on
+    def lightLED(lightColor):        
+        if lightColor == 'Red':
+            redLed.on()
+        elif lightColor == 'Yellow':
+            yellowLed.on()
+        elif lightColor == 'Green':
+            greenLed.on()
+        elif lightColor == 'Blue':
+            blueLed.on()
             
     #Game logic to determine correct/incorrect answer's as well as determine mastery and level advancement
     def checkAnswer(guess):
@@ -190,17 +220,37 @@ def loadGamePlayUI():
         else:
             counter += 1
 
+        #Turn off any LED which is lit by forcing them all off.
+        redLed.off()
+        yellowLed.off()
+        greenLed.off()
+        blueLed.off()
 
-        match level:
-            case 1:
-                generateLevelOne()
-            case 2:
-                generateLevelTwo()
-            case 3:
-                generateLevelThree()
-            case 4:
-                messagebox.showinfo(title = 'CONGRATULATIONS!', message= 'You have reached the max level of this game!')
+        #This block of code only works with Python 3.10 or later.
+        #match level:
+        #    case 1:
+        #        generateLevelOne()
+        #    case 2:
+        #        generateLevelTwo()
+        #    case 3:
+        #        generateLevelThree()
+        #    case 4:
+        #        messagebox.showinfo(title = 'CONGRATULATIONS!', message= 'You have reached the max level of this game!')
 
+        #This block of code is used for Python versions earlier than 3.10
+        if level == 1:
+            generateLevelOne()
+        elif level == 2:
+            generateLevelTwo()
+        elif level == 3:
+            generateLevelThree()
+        elif level == 4:
+            generateLevelFour()
+        elif level == 5:
+            generateLevelFive()
+        elif level == 6:
+            messagebox.showinfo(title = 'CONGRATULATIONS!', message= 'You have reached the max level of this game!')
+        
     generateLevelOne()
 
 #Exits the application
@@ -259,6 +309,33 @@ def loadInstructionsUI():
 
     ttk.Button(instructionsFrame, text = "Start", command = lambda: loadGamePlayUI()).grid(row = 4, column = 0, padx= 5, pady= 5)
     ttk.Button(instructionsFrame, text = 'Quit', command = lambda: quit()).grid(row = 4, column = 1, padx= 5, pady= 5)
+
+    #Assign variables to corosponding LEDs
+    redLed = LED(13)
+    yellowLed = LED(19)
+    greenLed = LED(26)
+    blueLed = LED(12)
+
+    #Used to flash the leds in sequence, one at a time.
+    def flashLights():
+        redLed.on()
+        sleep(0.25)
+        redLed.off()
+        sleep(0.25)
+        yellowLed.on()
+        sleep(0.25)
+        yellowLed.off()
+        sleep(0.25)
+        greenLed.on()
+        sleep(0.25)
+        greenLed.off()
+        sleep(0.25)
+        blueLed.on()
+        sleep(0.25)
+        blueLed.off()
+        sleep(0.25)
+
+    flashLights()
 
 #Loads the UI for staff to view user data
 def loadTeacherUI():
