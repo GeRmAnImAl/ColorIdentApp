@@ -5,6 +5,8 @@ from tkinter import messagebox
 import sqlite3
 from PIL import ImageTk, Image
 import random
+from playsound import *
+
 
 root = tk.Tk()
 root.title("Color Identification Assessment")
@@ -289,6 +291,7 @@ gamePlayFrame= ttk.Frame(root)
 
 for frame in (loginFrame, instructionsFrame, teacherUIFrame, gamePlayFrame):
     frame.grid(row = 0, column = 0, sticky = 'nesw')
+
 
 #Create the database if one does not exist
 createDB()
