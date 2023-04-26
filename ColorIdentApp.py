@@ -5,10 +5,9 @@ from tkinter import messagebox
 import sqlite3
 from PIL import ImageTk, Image
 import random
-from playsound import *
+from playsound import playsound
 from gpiozero import LED
 from time import sleep
-
 
 root = tk.Tk()
 root.title("Color Identification Assessment")
@@ -109,7 +108,7 @@ def updateUser(correct, incorrect, level):
     cur = db.cursor()
     res = cur.execute('SELECT highest_level FROM users WHERE id = ?', (userOBJ.userID,))
     highestLevel = res.fetchone()[0]
-    
+
     cur.execute('UPDATE users SET total_correct = ? WHERE id = ?', (userOBJ.totalCorrect, userOBJ.userID,))
     cur.execute('UPDATE users SET total_incorrect = ? WHERE id = ?', (userOBJ.totalIncorrect, userOBJ.userID,))
     if level > int(highestLevel):
@@ -147,6 +146,12 @@ def loadGamePlayUI():
     correct = 0
     incorrect = 0
     level = 1
+    
+    #Assign variables to corosponding LEDs
+    redLed = LED(13)
+    yellowLed = LED(19)
+    greenLed = LED(26)
+    blueLed = LED(12)
 
     #Game logic for level one
     def generateLevelOne():
@@ -171,7 +176,7 @@ def loadGamePlayUI():
         color_image.config(bg= '#e1d8b9')
         color_label.config(text = randomColor, foreground= randomColor)
         lightLED(randomColor)
-
+    
     #Game logic for level four
     def generateLevelFour():
         nonlocal randomColor
@@ -184,8 +189,8 @@ def loadGamePlayUI():
         nonlocal randomColor
         randomColor = random.choice(colorList)
         color_image.config(bg= '#e1d8b9')
-        color_label.config(text = randomColor, foreground= 'Black')
-
+        color_label.config(text = randomColor, foreground= random.choice(colorList))
+        
     #Logic to determine which LED to turn on
     def lightLED(lightColor):        
         if lightColor == 'Red':
@@ -219,24 +224,24 @@ def loadGamePlayUI():
             counter = 1
         else:
             counter += 1
-
+        
         #Turn off any LED which is lit by forcing them all off.
         redLed.off()
         yellowLed.off()
         greenLed.off()
         blueLed.off()
 
-        #This block of code only works with Python 3.10 or later.
+        #This block of code only works with Python 3.10 or later
         #match level:
-        #    case 1:
-        #        generateLevelOne()
-        #    case 2:
-        #        generateLevelTwo()
-        #    case 3:
-        #        generateLevelThree()
-        #    case 4:
-        #        messagebox.showinfo(title = 'CONGRATULATIONS!', message= 'You have reached the max level of this game!')
-
+        #   case 1:
+        #      generateLevelOne()
+        # case 2:
+        #    generateLevelTwo()
+        #case 3:
+        #   generateLevelThree()
+        #case 4:
+        #   messagebox.showinfo(title = 'CONGRATULATIONS!', message= 'You have reached the max level of this game!')
+        
         #This block of code is used for Python versions earlier than 3.10
         if level == 1:
             generateLevelOne()
@@ -250,7 +255,9 @@ def loadGamePlayUI():
             generateLevelFive()
         elif level == 6:
             messagebox.showinfo(title = 'CONGRATULATIONS!', message= 'You have reached the max level of this game!')
-        
+            loadLoginUI()
+
+
     generateLevelOne()
 
 #Exits the application
@@ -270,11 +277,23 @@ def loadLoginUI():
     ttk.Label(loginFrame, text= "Welcome to Color Picker!", style = 'Header.TLabel').grid(row=0, column=0, columnspan = 3)
     ttk.Label(loginFrame, text = 'User Name:').grid(row= 1, column= 0, padx = 5, pady= 5, sticky = 'e')
     entry_userID = ttk.Entry(loginFrame, width = 12, font = ('Arial', 10))
-    entry_userID.grid(row = 1, column=1, padx = 5, sticky = 'w', columnspan= 2)
-    ttk.Button(loginFrame, text = 'Login', command = lambda: login(entry_userID)).grid(row = 2, column = 0, padx=5, pady= 5, columnspan = 2)
-    ttk.Button(loginFrame, text = 'Create User', command = lambda: createUser(entry_userID, staffFlag)).grid(row = 3, column = 0, padx= 5, pady= 5, columnspan = 2)
+    entry_userID.grid(row = 1, column=1, padx = 5, sticky = 'w', columnspan= 3)
+    ttk.Button(loginFrame, text = 'Login', command = lambda: login(entry_userID)).grid(row = 2, column = 0, padx=5, pady= 5, columnspan = 3)
+    ttk.Button(loginFrame, text = 'Create User', command = lambda: createUser(entry_userID, staffFlag)).grid(row = 3, column = 0, padx= 5, pady= 5, columnspan = 3)
     staffFlag = tk.BooleanVar()
     staff = ttk.Checkbutton(loginFrame, text = "Staff", variable = staffFlag, onvalue=True, offvalue= False).grid(row = 3, column = 2, sticky = 'w')
+    
+    ttk.Button(loginFrame, text = '1', command = lambda: entry_userID.insert(END, '1')).grid(row = 5, column = 0, padx = 5, pady = 5)
+    ttk.Button(loginFrame, text = '2', command = lambda: entry_userID.insert(END, '2')).grid(row = 5, column = 1, padx = 5, pady = 5)
+    ttk.Button(loginFrame, text = '3', command = lambda: entry_userID.insert(END, '3')).grid(row = 5, column = 2, padx = 5, pady = 5)
+    ttk.Button(loginFrame, text = '4', command = lambda: entry_userID.insert(END, '4')).grid(row = 6, column = 0, padx = 5, pady = 5)
+    ttk.Button(loginFrame, text = '5', command = lambda: entry_userID.insert(END, '5')).grid(row = 6, column = 1, padx = 5, pady = 5)
+    ttk.Button(loginFrame, text = '6', command = lambda: entry_userID.insert(END, '6')).grid(row = 6, column = 2, padx = 5, pady = 5)
+    ttk.Button(loginFrame, text = '7', command = lambda: entry_userID.insert(END, '7')).grid(row = 7, column = 0, padx = 5, pady = 5)
+    ttk.Button(loginFrame, text = '8', command = lambda: entry_userID.insert(END, '8')).grid(row = 7, column = 1, padx = 5, pady = 5)
+    ttk.Button(loginFrame, text = '9', command = lambda: entry_userID.insert(END, '9')).grid(row = 7, column = 2, padx = 5, pady = 5)
+    ttk.Button(loginFrame, text = '0', command = lambda: entry_userID.insert(END, '0')).grid(row = 8, column = 0, padx = 5, pady = 5, columnspan = 3)
+    ttk.Button(loginFrame, text = 'Clear', command = lambda: entry_userID.delete(0, END)).grid(row = 9, column = 2, padx = 5, pady =5)
 
 #Loads the UI for gameplay instructions
 def loadInstructionsUI():
@@ -283,7 +302,7 @@ def loadInstructionsUI():
     instructionsFrame.pack_propagate(False)
     ttk.Label(instructionsFrame, text = "Game Instructions", style = 'Header.TLabel').grid(row = 0, column = 0, columnspan = 2, padx=5, pady=5)
     
-    pic = Image.open('Assets\Look.png')
+    pic = Image.open('Assets/Look.png')
     resizePic = pic.resize((100, 100), Image.LANCZOS)
     eyes = ImageTk.PhotoImage(resizePic)
     eyes_label = ttk.Label(instructionsFrame, image = eyes)
@@ -291,7 +310,7 @@ def loadInstructionsUI():
     eyes_label.grid(row = 1, column = 0, padx=5, pady=5)
     ttk.Label(instructionsFrame, text = 'Look!', style = 'TLabel').grid(row = 1, column=1, padx=5, pady=5)
 
-    pic = Image.open('Assets\Listen.png')
+    pic = Image.open('Assets/Listen.png')
     resizePic = pic.resize((100, 100), Image.LANCZOS)
     ear = ImageTk.PhotoImage(resizePic)
     ear_label = ttk.Label(instructionsFrame, image = ear)
@@ -299,7 +318,7 @@ def loadInstructionsUI():
     ear_label.grid(row = 2, column = 1, padx=5, pady=5)
     ttk.Label(instructionsFrame, text = 'Listen!', style = 'TLabel').grid(row = 2, column=0, padx=5, pady=5)
 
-    pic = Image.open('Assets\Press.png')
+    pic = Image.open('Assets/Press.png')
     resizePic = pic.resize((100, 100), Image.LANCZOS)
     press = ImageTk.PhotoImage(resizePic)
     press_label = ttk.Label(instructionsFrame, image = press)
@@ -309,13 +328,13 @@ def loadInstructionsUI():
 
     ttk.Button(instructionsFrame, text = "Start", command = lambda: loadGamePlayUI()).grid(row = 4, column = 0, padx= 5, pady= 5)
     ttk.Button(instructionsFrame, text = 'Quit', command = lambda: quit()).grid(row = 4, column = 1, padx= 5, pady= 5)
-
+    
     #Assign variables to corosponding LEDs
     redLed = LED(13)
     yellowLed = LED(19)
     greenLed = LED(26)
     blueLed = LED(12)
-
+    
     #Used to flash the leds in sequence, one at a time.
     def flashLights():
         redLed.on()
@@ -334,7 +353,7 @@ def loadInstructionsUI():
         sleep(0.25)
         blueLed.off()
         sleep(0.25)
-
+    
     flashLights()
 
 #Loads the UI for staff to view user data
@@ -369,10 +388,10 @@ gamePlayFrame= ttk.Frame(root)
 for frame in (loginFrame, instructionsFrame, teacherUIFrame, gamePlayFrame):
     frame.grid(row = 0, column = 0, sticky = 'nesw')
 
-
 #Create the database if one does not exist
 createDB()
 #Load the user login UI
 loadLoginUI()
 
 root.mainloop()
+
