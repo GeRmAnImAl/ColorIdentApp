@@ -5,7 +5,6 @@ from tkinter import messagebox
 import sqlite3
 from PIL import ImageTk, Image
 import random
-from playsound import playsound
 from gpiozero import LED
 from time import sleep
 
@@ -160,7 +159,7 @@ def loadGamePlayUI():
         randomColor = random.choice(colorList)
         color_image.config(bg= randomColor)
         color_label.config(text = randomColor, foreground= randomColor)
-        lightLED(randomColor)
+        #lightLED(randomColor)
     
     #Game logic for level two
     def generateLevelTwo():
@@ -168,7 +167,7 @@ def loadGamePlayUI():
         randomColor = random.choice(colorList)
         color_image.config(bg= randomColor)
         color_label.config(text = randomColor, foreground= 'Black')
-        lightLED(randomColor)
+        #lightLED(randomColor)
 
     #Game logic for level three
     def generateLevelThree():
@@ -176,7 +175,7 @@ def loadGamePlayUI():
         randomColor = random.choice(colorList)
         color_image.config(bg= '#e1d8b9')
         color_label.config(text = randomColor, foreground= randomColor)
-        lightLED(randomColor)
+        #lightLED(randomColor)
     
     #Game logic for level four
     def generateLevelFour():
