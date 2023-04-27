@@ -14,10 +14,11 @@ root.title("Color Identification Assessment")
 root.eval("tk::PlaceWindow . center")
 
 #Set application default theme
+#Theme optimized for Raspberry Pi OS
 style = ttk.Style()
 style.configure('TFrame', background = '#e1d8b9')
 style.configure('TLabel', background = '#e1d8b9', font = ('Arial', 11))
-style.configure('TButton', background = '#28393a')
+style.configure('TButton', background = '#28393a', foreground = 'White')
 style.configure('Header.TLabel', font = ('Arial', 18, 'bold'))
 style.configure('Header2.TLabel', font = ('Arial', 14, 'bold'))
 
