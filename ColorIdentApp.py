@@ -255,7 +255,7 @@ def loadGamePlayUI():
             generateLevelFive()
         elif level == 6:
             messagebox.showinfo(title = 'CONGRATULATIONS!', message= 'You have reached the max level of this game!')
-            loadLoginUI()
+            updateUser()
 
 
     generateLevelOne()
